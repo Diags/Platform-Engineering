@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: platform-engineering
+  labels:
+    app: platform-engineering
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: platform-engineering
+  template:
+    metadata:
+      labels:
+        app: platform-engineering
+    spec:
+      containers:
+      - name: platform-engineering
+        image: diagsylla/platform-engineering:v1
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: platform-engineering
+spec:
+  selector:
+    app: platform-engineering
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: platform-engineering
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: platform-engineering.diagsylla.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: platform-engineering
+            port:
+              number: 8080
