@@ -11,6 +11,7 @@ app = Flask(__name__)
 # the associated function.
 @app.route('/')
 def home():
+    # Trigger CI/CD pipeline
     return jsonify({
         "message": "Welcome to Platform Engineering API",
         "version": "1.0.0",
