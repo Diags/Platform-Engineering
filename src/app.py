@@ -12,7 +12,7 @@ import os
 from datetime import datetime
 from flask import Flask, jsonify
 
-# Configuration de l'application Flask
+# Configuration de l'application Flask. __name__ est le nom du module ou du package.
 app = Flask(__name__)
 
 # Configuration des variables d'environnement
