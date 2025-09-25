@@ -78,9 +78,6 @@ jobs:
           tags: |
             diagsylla/platform-engineering:${{ env.SHORT_SHA }}
             diagsylla/platform-engineering:latest
-          # Cache pour accélérer les builds
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           # Métadonnées pour l'image
           labels: |
             org.opencontainers.image.title=Platform Engineering
