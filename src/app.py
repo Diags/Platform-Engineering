@@ -27,6 +27,7 @@ def details():
         "name": "John Doe",
         "age": 30,
         "email": "john.doe@example.com"
+        "time": datetime.now().isoformat()
     })
 
 @app.route('/api/v1/health')
