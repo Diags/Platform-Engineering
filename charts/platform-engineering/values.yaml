@@ -1,73 +1,114 @@
-# Default values for platform-engineering.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Platform Engineering Helm Chart - Configuration Values
+# 
+# Ce fichier contient les valeurs par défaut pour le déploiement de l'application
+# Platform Engineering avec Helm. Toutes les valeurs peuvent être surchargées
+# lors de l'installation ou de la mise à jour du chart.
+#
+# Auteur: Diags
+# Version: 1.0.0
+# Documentation: https://github.com/Diags/Platform-Engineering
 
-# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+# =============================================================================
+# CONFIGURATION GÉNÉRALE
+# =============================================================================
+
+# Nombre de réplicas pour l'application
+# Plus d'informations: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
-# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+# Configuration de l'image Docker
+# Plus d'informations: https://kubernetes.io/docs/concepts/containers/images/
 image:
+  # Repository Docker Hub contenant l'image
   repository: diagsylla/platform-engineering
-  # This sets the pull policy for images.
+  # Politique de pull des images (IfNotPresent, Always, Never)
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
+  # Tag de l'image (par défaut: v2, peut être surchargé)
   tag: v2
 
-# This is for the secretes for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+# Secrets pour l'authentification auprès d'un registry privé
+# Plus d'informations: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
-# This is to override the chart name.
+
+# Override du nom du chart
 nameOverride: ""
 fullnameOverride: ""
 
-# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+# =============================================================================
+# SERVICE ACCOUNT
+# =============================================================================
+
+# Configuration du Service Account Kubernetes
+# Plus d'informations: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
-  # Specifies whether a service account should be created
+  # Créer automatiquement un Service Account
   create: true
-  # Automatically mount a ServiceAccount's API credentials?
+  # Monter automatiquement les credentials API du Service Account
   automount: true
-  # Annotations to add to the service account
+  # Annotations à ajouter au Service Account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
+  # Nom du Service Account (généré automatiquement si vide)
   name: ""
 
-# This is for setting Kubernetes Annotations to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+# =============================================================================
+# POD CONFIGURATION
+# =============================================================================
+
+# Annotations à ajouter aux pods
+# Plus d'informations: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
 podAnnotations: {}
-# This is for setting Kubernetes Labels to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+
+# Labels à ajouter aux pods
+# Plus d'informations: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
 
+# Contexte de sécurité au niveau du pod
 podSecurityContext: {}
-  # fsGroup: 2000
+  # fsGroup: 2000  # Groupe propriétaire des volumes
 
+# Contexte de sécurité au niveau du conteneur
 securityContext: {}
   # capabilities:
   #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+  #   - ALL  # Supprimer toutes les capabilities
+  # readOnlyRootFilesystem: true  # Système de fichiers racine en lecture seule
+  # runAsNonRoot: true  # Exécuter en tant qu'utilisateur non-root
+  # runAsUser: 1000  # ID utilisateur spécifique
 
-# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+# =============================================================================
+# SERVICE KUBERNETES
+# =============================================================================
+
+# Configuration du service Kubernetes
+# Plus d'informations: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
-  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  # Type de service (ClusterIP, NodePort, LoadBalancer)
   type: ClusterIP
-  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  # Port d'exposition du service
   port: 5000
 
-# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+# =============================================================================
+# INGRESS CONFIGURATION
+# =============================================================================
+
+# Configuration de l'Ingress pour l'exposition externe
+# Plus d'informations: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
+  # Activer l'Ingress
   enabled: true
+  # Classe d'Ingress (nginx, traefik, etc.)
   className: nginx
+  # Annotations pour l'Ingress
   annotations: {}
     # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+    # kubernetes.io/tls-acme: "true"  # Pour Let's Encrypt
+  # Configuration des hôtes
   hosts:
     - host: platform-engineering.diagsylla.com
       paths:
         - path: /
           pathType: Prefix
+  # Configuration TLS (HTTPS)
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:

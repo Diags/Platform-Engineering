@@ -1,36 +1,105 @@
-name: ci
+# Platform Engineering - CI/CD Pipeline
+# 
+# Ce workflow GitHub Actions automatise le processus de build et de déploiement
+# de l'application Platform Engineering. Il se déclenche lors des modifications
+# dans le dossier src/ et construit une image Docker qui est poussée vers Docker Hub.
+#
+# Auteur: Diags
+# Version: 1.0.0
 
+name: Platform Engineering CI/CD
+
+# Déclencheurs du workflow
 on:
   push:
+    # Se déclenche uniquement lors de modifications dans le dossier src/
+    # pour éviter des builds inutiles lors de changements de documentation
     paths:
       - 'src/**'
+    # Se déclenche uniquement sur la branche main
     branches:
       - main
+  # Permet de déclencher le workflow manuellement depuis l'interface GitHub
+  workflow_dispatch:
 
+# Configuration des jobs
 jobs:
+  # Job principal pour la construction et le push de l'image Docker
   docker:
+    # Utilise un runner Ubuntu pour la compatibilité
     runs-on: ubuntu-latest
+    
+    # Étapes du job
     steps:
-      -
-        name: Checkout code
+      # Étape 1: Récupération du code source
+      - name: Checkout code
         uses: actions/checkout@v4
-      -
-        name: List files
-        run: ls -la
-      -
-        name: Set short SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA:0:6}" >> $GITHUB_ENV
-      -
-        name: Login to Docker Hub
+        with:
+          # Récupère l'historique complet pour les tags
+          fetch-depth: 0
+      
+      # Étape 2: Debug - Affichage des fichiers présents
+      - name: List files for debugging
+        run: |
+          echo "Files in repository:"
+          ls -la
+          echo "Dockerfile content:"
+          cat Dockerfile
+      
+      # Étape 3: Création d'un SHA court pour le tag Docker
+      - name: Set short SHA for Docker tag
+        run: |
+          # Extrait les 6 premiers caractères du SHA du commit
+          echo "SHORT_SHA=${GITHUB_SHA:0:6}" >> $GITHUB_ENV
+          echo "Full SHA: ${GITHUB_SHA}"
+          echo "Short SHA: ${GITHUB_SHA:0:6}"
+      
+      # Étape 4: Authentification auprès de Docker Hub
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
+          # Utilise les secrets configurés dans GitHub
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Build and push
+          # Logout automatique après le build pour la sécurité
+          logout: true
+      
+      # Étape 5: Construction et push de l'image Docker
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
+          # Contexte de build (répertoire racine)
           context: .
+          # Fichier Dockerfile explicite
           file: ./Dockerfile
+          # Active le push vers le registry
           push: true
-          tags: diagsylla/platform-engineering:${{ env.SHORT_SHA }}
+          # Tags de l'image avec le SHA court
+          tags: |
+            diagsylla/platform-engineering:${{ env.SHORT_SHA }}
+            diagsylla/platform-engineering:latest
+          # Cache pour accélérer les builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Métadonnées pour l'image
+          labels: |
+            org.opencontainers.image.title=Platform Engineering
+            org.opencontainers.image.description=Flask application for Platform Engineering
+            org.opencontainers.image.version=${{ env.SHORT_SHA }}
+            org.opencontainers.image.source=https://github.com/Diags/Platform-Engineering
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+      
+      # Étape 6: Notification de succès (optionnel)
+      - name: Build success notification
+        if: success()
+        run: |
+          echo "✅ Build successful!"
+          echo "🐳 Image pushed: diagsylla/platform-engineering:${{ env.SHORT_SHA }}"
+          echo "🔗 Docker Hub: https://hub.docker.com/r/diagsylla/platform-engineering"
+      
+      # Étape 7: Notification d'échec (optionnel)
+      - name: Build failure notification
+        if: failure()
+        run: |
+          echo "❌ Build failed!"
+          echo "🔍 Check the logs above for details"
