@@ -11,7 +11,7 @@ app = Flask(__name__)
 # the associated function.
 @app.route('/')
 def home():
-    # print the request headers
+    # print the request headers and body
     return jsonify({
         "message": "Welcome to Platform Engineering API",
         "version": "1.0.0",
